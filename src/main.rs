@@ -117,29 +117,35 @@ fn game(money: f64) {
     println!("1 Stand");
     println!("2 Hit");
     println!("3 Double bet and get 1 card");
-    let mut choosestring = String::new();
-    io::stdin()
-        .read_line(&mut choosestring)
-        .expect("Failed to read line");
-    let choose = match choosestring.trim().parse::<i32>() {
-        Ok(n) => n,
-        Err(_) => {
-            println!("Invalid input. Please enter a valid number.");
-            return;
-        }
-    };
-    match choose {
-        1 => {
-            println!("Standing");
-        }
-        2 => {
-            println!("Hitting");
-        }
-        3 => {
-            println!("Doubling");
-        }
-        _ => {
-            println!("Invalid option");
+
+    loop {
+        let mut choosestring = String::new();
+        io::stdin()
+            .read_line(&mut choosestring)
+            .expect("Failed to read line");
+        let choose = match choosestring.trim().parse::<i32>() {
+            Ok(n) => n,
+            Err(_) => {
+                println!("Invalid input. Please enter a valid number.");
+                return;
+            }
+        };
+        match choose {
+            1 => {
+                println!("Standing");
+                break;
+            }
+            2 => {
+                println!("Hitting");
+                break;
+            }
+            3 => {
+                println!("Doubling");
+                break;
+            }
+            _ => {
+                println!("Invalid option");
+            }
         }
     }
 }
