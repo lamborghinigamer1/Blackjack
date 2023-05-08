@@ -49,39 +49,54 @@ fn sortcard(card: &str, cardvalue: i32) -> i32 {
     cardvalue
 }
 
-fn game(money: f64) {
-    let mut betstring = String::new();
+fn revealdealer(dealercards: [String; 2], dealervalue: i32) {
+    for dealercard in dealercards.iter() {
+        println!("{}", dealercard);
+    }
+    println!("Dealers value = {}", dealervalue);
+}
+
+fn stand(cardvalue: i32, dealervalue: i32) -> bool {
+    let mut win = false;
+    if dealervalue < 21 && cardvalue < dealervalue {
+        println!("Dealer wins!");
+    } else {
+        println!("You win!");
+        win = true
+    }
+    win
+}
+
+fn game(mut money: f64) -> f64 {
     println!("Your money: ${:.2}\n", money);
     println!("How much would you like to bet: ");
+    let mut betstring = String::new();
     io::stdin()
         .read_line(&mut betstring)
         .expect("Failed to read line");
 
     let bet = match betstring.trim().parse::<f64>() {
         Ok(n) => n,
-        Err(_) => {
-            println!("Invalid input. Please enter a valid number.");
-            return;
-        }
+        Err(_) => 0.0,
     };
-
-    match (bet * 100.0) as i64 {
-        0 => {
-            println!("Your bet cannot be $0.00");
-            return;
-        }
-        bet if bet > (money * 100.0) as i64 => {
-            println!("Your bet is too large");
-            println!("You currently have ${}", money);
-        }
-        _ => {
-            println!("Bet set of ${}\nLets begin!", bet)
+    loop {
+        match (bet * 100.0) as i64 {
+            0 => {
+                println!("Your bet cannot be $0.00");
+            }
+            bet if bet > (money * 100.0) as i64 => {
+                println!("Your bet is too large");
+                println!("You currently have ${}", money);
+            }
+            _ => {
+                println!("Bet set of ${}\nLets begin!\n", bet);
+                break;
+            }
         }
     }
 
     if money == 0.00 {
         println!("Game over, You ran out of money");
-        return;
     }
 
     let suits = ["heart ", "spades ", "clubs ", "diamonds "];
@@ -102,6 +117,24 @@ fn game(money: f64) {
         ),
     ];
 
+    let dealercards = [
+        format!(
+            "{}{}",
+            suits[random_number(0, 3)],
+            rank[random_number(0, 12)]
+        ),
+        format!(
+            "{}{}",
+            suits[random_number(0, 3)],
+            rank[random_number(0, 12)]
+        ),
+    ];
+    println!("Dealer cards:\n\n???");
+    println!("{}\n", dealercards[1]);
+
+    println!("Your cards:\n");
+
+    let mut dealervalue = 0;
     let mut cardvalue = 0;
 
     for fullcard in cards.iter() {
@@ -111,6 +144,11 @@ fn game(money: f64) {
 
         cardvalue = sortcard(card, cardvalue);
     }
+
+    for dealercard in dealercards.iter() {
+        dealervalue = sortcard(dealercard, dealervalue)
+    }
+
     println!("The value total value = {}\n", cardvalue);
 
     println!("What would you like to?\n");
@@ -125,14 +163,14 @@ fn game(money: f64) {
             .expect("Failed to read line");
         let choose = match choosestring.trim().parse::<i32>() {
             Ok(n) => n,
-            Err(_) => {
-                println!("Invalid input. Please enter a valid number.");
-                return;
-            }
+            Err(_) => 0,
         };
         match choose {
             1 => {
-                println!("Standing");
+                revealdealer(dealercards, dealervalue);
+                if stand(cardvalue, dealervalue) == false {
+                    money -= bet;
+                }
                 break;
             }
             2 => {
@@ -148,6 +186,7 @@ fn game(money: f64) {
             }
         }
     }
+    money
 }
 
 fn help() {
@@ -155,17 +194,19 @@ fn help() {
 }
 
 fn main() {
-    let money = 50.00;
     let mut continuescript = false;
 
     println!("Welcome to Black jack!\n");
     println!("Type help for instructions");
     println!("Type start to play and exit to quit the game");
 
+    let mut money: f64 = 0.00;
     loop {
+        println!("{}", money);
         let mut action = String::new();
 
         if continuescript == false {
+            money += 50.00;
             io::stdin()
                 .read_line(&mut action)
                 .expect("Failed to read line");
@@ -191,31 +232,10 @@ fn main() {
                 .read_line(&mut action)
                 .expect("Failed to read line");
             match action.trim().to_lowercase().as_str() {
-                "yes" => {
-                    game(money);
+                "yes" | "y" | "ye" | "affirmative" => {
+                    money = game(money);
                 }
-                "y" => {
-                    game(money);
-                }
-                "ye" => {
-                    game(money);
-                }
-                "affirmative" => {
-                    game(money);
-                }
-                "no" => {
-                    println!("Goodbye have a nice day!");
-                    exit(0);
-                }
-                "n" => {
-                    println!("Goodbye have a nice day!");
-                    exit(0);
-                }
-                "negative" => {
-                    println!("Goodbye have a nice day!");
-                    exit(0);
-                }
-                "nein" => {
+                "no" | "n" | "negative" | "nein" => {
                     println!("Goodbye have a nice day!");
                     exit(0);
                 }
