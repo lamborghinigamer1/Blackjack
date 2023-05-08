@@ -145,7 +145,8 @@ fn game(mut money: f64) -> f64 {
         cardvalue = sortcard(card, cardvalue);
     }
 
-    for dealercard in dealercards.iter() {
+    for fulldealercard in dealercards.iter() {
+        let dealercard = fulldealercard.split(' ').last().unwrap();
         dealervalue = sortcard(dealercard, dealervalue)
     }
 
@@ -202,7 +203,6 @@ fn main() {
 
     let mut money: f64 = 0.00;
     loop {
-        println!("{}", money);
         let mut action = String::new();
 
         if continuescript == false {
