@@ -56,15 +56,15 @@ fn revealdealer(dealercards: [String; 2], dealervalue: i32) {
     println!("Dealers value = {}", dealervalue);
 }
 
-fn stand(cardvalue: i32, dealervalue: i32) -> bool {
-    let mut win = false;
+fn stand(cardvalue: i32, dealervalue: i32, bet: f64, mut money: f64) -> f64 {
     if dealervalue < 21 && cardvalue < dealervalue {
         println!("Dealer wins!");
+        money -= bet;
     } else {
         println!("You win!");
-        win = true
+        money += bet * 2.0;
     }
-    win
+    money
 }
 
 fn game(mut money: f64) -> f64 {
@@ -83,10 +83,12 @@ fn game(mut money: f64) -> f64 {
         match (bet * 100.0) as i64 {
             0 => {
                 println!("Your bet cannot be $0.00");
+                continue;
             }
             bet if bet > (money * 100.0) as i64 => {
                 println!("Your bet is too large");
                 println!("You currently have ${}", money);
+                continue;
             }
             _ => {
                 println!("Bet set of ${}\nLets begin!\n", bet);
@@ -169,9 +171,7 @@ fn game(mut money: f64) -> f64 {
         match choose {
             1 => {
                 revealdealer(dealercards, dealervalue);
-                if stand(cardvalue, dealervalue) == false {
-                    money -= bet;
-                }
+                money = stand(cardvalue, dealervalue, bet, money);
                 break;
             }
             2 => {
@@ -196,12 +196,12 @@ fn help() {
 
 fn main() {
     let mut continuescript = false;
+    let mut money: f64 = 0.00;
 
     println!("Welcome to Black jack!\n");
     println!("Type help for instructions");
     println!("Type start to play and exit to quit the game");
 
-    let mut money: f64 = 0.00;
     loop {
         let mut action = String::new();
 
@@ -212,8 +212,9 @@ fn main() {
                 .expect("Failed to read line");
             match action.trim().to_lowercase().as_str() {
                 "start" => {
-                    game(money);
+                    money = game(money);
                     continuescript = true;
+                    println!("Your money: ${:.2}\n", money);
                 }
                 "exit" => {
                     println!("Goodbye have a nice day!");
@@ -234,6 +235,7 @@ fn main() {
             match action.trim().to_lowercase().as_str() {
                 "yes" | "y" | "ye" | "affirmative" => {
                     money = game(money);
+                    println!("Your money: ${:.2}\n", money);
                 }
                 "no" | "n" | "negative" | "nein" => {
                     println!("Goodbye have a nice day!");
