@@ -2,6 +2,14 @@ use rand::Rng;
 use std::ops::RangeInclusive;
 use std::{io, process::exit};
 
+fn checkmoney(money: f64) -> bool {
+    let mut lose = false;
+    if money < 0.01 {
+        lose = true;
+    }
+    lose
+}
+
 fn random_number(startrange: usize, maxrange: usize) -> usize {
     let mut rng = rand::thread_rng();
     let num = rng.gen_range(RangeInclusive::new(startrange, maxrange));
@@ -12,7 +20,7 @@ fn sortcard(card: &str, cardvalue: i32) -> i32 {
     let mut cardvalue = cardvalue;
     match card {
         "ace" => {
-            if cardvalue > 11 {
+            if cardvalue >= 11 {
                 cardvalue += 1;
             } else {
                 cardvalue += 11;
@@ -57,9 +65,8 @@ fn revealdealer(dealercards: [String; 2], dealervalue: i32) {
 }
 
 fn stand(cardvalue: i32, dealervalue: i32, bet: f64, mut money: f64) -> f64 {
-    if dealervalue < 21 && cardvalue < dealervalue {
+    if dealervalue <= 21 && cardvalue < dealervalue {
         println!("Dealer wins!");
-        money -= bet;
     } else {
         println!("You win!");
         money += bet * 2.0;
@@ -71,15 +78,17 @@ fn game(mut money: f64) -> f64 {
     println!("Your money: ${:.2}\n", money);
     println!("How much would you like to bet: ");
     let mut betstring = String::new();
-    io::stdin()
-        .read_line(&mut betstring)
-        .expect("Failed to read line");
+    let mut bet: f64;
 
-    let bet = match betstring.trim().parse::<f64>() {
-        Ok(n) => n,
-        Err(_) => 0.0,
-    };
     loop {
+        betstring.clear();
+        io::stdin()
+            .read_line(&mut betstring)
+            .expect("Failed to read line");
+        bet = match betstring.trim().parse::<f64>() {
+            Ok(n) => n,
+            Err(_) => 0.0,
+        };
         match (bet * 100.0) as i64 {
             0 => {
                 println!("Your bet cannot be $0.00");
@@ -87,18 +96,16 @@ fn game(mut money: f64) -> f64 {
             }
             bet if bet > (money * 100.0) as i64 => {
                 println!("Your bet is too large");
-                println!("You currently have ${}", money);
+                println!("You currently have ${:.2}", money);
                 continue;
             }
             _ => {
-                println!("Bet set of ${}\nLets begin!\n", bet);
+                println!("Bet set of ${:.2}\nLets begin!\n", bet);
+                money -= bet;
+                money = (money * 100.0).round() / 100.0;
                 break;
             }
         }
-    }
-
-    if money == 0.00 {
-        println!("Game over, You ran out of money");
     }
 
     let suits = ["heart ", "spades ", "clubs ", "diamonds "];
@@ -187,11 +194,12 @@ fn game(mut money: f64) -> f64 {
             }
         }
     }
+    money = (money * 100.0).round() / 100.0;
     money
 }
 
 fn help() {
-    println!("You place a bet and then you get 2 random cards and you decide if you want more cards.\nIf the dealer gets more than you then you lose, but when you have more than the dealer you win.\nIf you have more than 21 you also lose.\nWhenever you win you get twice the amount of your bet.");
+    println!("\nYou place a bet and then you get 2 random cards and you decide if you want more cards.\nIf the dealer gets more than you then you lose, but when you have more than the dealer you win.\nIf you have more than 21 you also lose.\nWhenever you win you get twice the amount of your bet.\n");
 }
 
 fn main() {
@@ -245,6 +253,13 @@ fn main() {
                     println!("Invalid command");
                 }
             }
+        }
+        if checkmoney(money) == true {
+            println!("You lose! You ran out of money :(\n");
+            continuescript = false;
+            println!(
+                "Type start to play again.\nExit to quit the game\nHelp to get game instructions."
+            );
         }
     }
 }
