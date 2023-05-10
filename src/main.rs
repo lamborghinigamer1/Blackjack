@@ -183,11 +183,9 @@ fn game(mut money: f64) -> f64 {
             }
             2 => {
                 println!("Hitting");
-                break;
             }
             3 => {
                 println!("Doubling");
-                break;
             }
             _ => {
                 println!("Invalid option");
